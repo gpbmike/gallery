@@ -123,23 +123,26 @@ export default React.createClass({
     let rowWidth = this.state.rowWidth;
     let minRowHeight = this.props.minRowHeight;
 
+    let itemStyle = {
+      display: "inline-block",
+      verticalAlign: "bottom"
+    };
+
     function buildRow(row) {
       return row.items.map(function (item) {
-        let imgStyle = {};
+        let imgStyle = {
+          display: "block"
+        };
         if (row.full) {
           imgStyle.width = item.aspectRatio * minRowHeight / row.width * rowWidth;
         } else {
           imgStyle.height = minRowHeight;
         }
-        return <span key={item.url}><img src={item.url} style={imgStyle} /></span>;
+        return <span key={item.url} style={itemStyle}><img src={item.url} style={imgStyle} /></span>;
       });
     }
 
-    let rowStyle = {
-      paddingTop: 5,
-      paddingBottom: 5,
-      borderBottom: "5px solid gray"
-    };
+    let rowStyle = {};
 
     var rows = this.getRows(this.state.loadedItems).map(function(row) {
       let key = row.items.reduce(function (memo, item) {
