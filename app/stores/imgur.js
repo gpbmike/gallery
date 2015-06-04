@@ -9,39 +9,62 @@ let subreddits = [
   "MilitaryPorn"
 ];
 
+let windows = [
+  "day",
+  "week",
+  "month",
+  "year",
+  "all"
+];
+
 let items = [];
 
 let ImgurStore = Object.assign({}, BaseStore, {
-  getItems: function(subreddit, orderBy) {
-    return items[`${subreddit}/${orderBy}`];
+  getItems: function(subreddit, options = {}) {
+    return items[`${subreddit}/${options.sort}/${options.window}`];
   },
   getSubreddits: function() {
     return subreddits;
+  },
+  getWindows: function() {
+    return windows;
   }
 });
 
 function parseImgur(results) {
   return results.data.map(function(child) {
-    let linkParts = child.link.split(".");
-    linkParts[linkParts.length - 2] += "l";
-    return linkParts.join(".");
+    // Let's just handle static images for now, not gifs
+    if (/^image\/(jpeg|png)/.test(child.type)) {
+      let linkParts = child.link.split(".");
+      linkParts[linkParts.length - 2] += "l";
+      return linkParts.join(".");
+    } else {
+      console.log(`Missing ${child.type} support.`);
+    }
+  }).filter(function(url) {
+    return !!url;
   });
 }
 
-function fetchSubreddit(subreddit, orderBy) {
+function fetchSubreddit(subreddit, options) {
 
-  let itemsKey = `${subreddit}/${orderBy}`;
+  let itemsKey = `${subreddit}/${options.sort}/${options.window}`;
 
   if (items[itemsKey]) {
     ImgurStore.emitChange();
     return;
   }
 
-  if (orderBy !== "top") {
-    orderBy = "";
+  var url = `https://api.imgur.com/3/gallery/r/${subreddit}`;
+
+  if (options.sort !== "time") {
+    url += `/${options.sort}`;
+    if (options.window) {
+      url += `/${options.window}`;
+    }
   }
 
-  fetch(`https://api.imgur.com/3/gallery/r/${subreddit}/${orderBy}`, {
+  fetch(url, {
     headers: {
       "Authorization": "Client-ID e4df882d90e3ac2"
     }
@@ -58,7 +81,7 @@ function fetchSubreddit(subreddit, orderBy) {
 ImgurStore.dispatchToken = AppDispatcher.register(function(action) {
   switch (action.actionType) {
     case AppConstants.IMGUR_FETCH:
-      fetchSubreddit(action.data.subreddit, action.data.orderBy);
+      fetchSubreddit(action.data.subreddit, action.data.options);
       break;
   }
 });

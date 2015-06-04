@@ -10,11 +10,10 @@ export default React.createClass({
   displayName: "Imgur",
 
   getInitialState: function () {
-    let subreddits = ImgurStore.getSubreddits();
     return {
-      subreddits: subreddits,
-      subreddit: subreddits[0],
-      orderBy: "hot"
+      subreddit: "EarthPorn",
+      sort: "time",
+      window: "week"
     };
   },
 
@@ -32,7 +31,10 @@ export default React.createClass({
 
   itemsChanged: function() {
     this.setState({
-      items: ImgurStore.getItems(this.state.subreddit, this.state.orderBy)
+      items: ImgurStore.getItems(this.state.subreddit, {
+        sort: this.state.sort,
+        window: this.state.window
+      })
     });
   },
 
@@ -41,7 +43,10 @@ export default React.createClass({
       actionType: AppConstants.IMGUR_FETCH,
       data: {
         subreddit: this.state.subreddit,
-        orderBy: this.state.orderBy
+        options: {
+          sort: this.state.sort,
+          window: this.state.window
+        }
       }
     });
   },
@@ -53,10 +58,17 @@ export default React.createClass({
     }, this.fetchGallery);
   },
 
-  setOrderBy: function(event) {
+  setSort: function(event) {
     this.setState({
       items: [],
-      orderBy: event.target.value
+      sort: event.target.value
+    }, this.fetchGallery);
+  },
+
+  setWindow: function(event) {
+    this.setState({
+      items: [],
+      window: event.target.value
     }, this.fetchGallery);
   },
 
@@ -70,19 +82,29 @@ export default React.createClass({
   },
 
   render: function() {
-    let options = this.state.subreddits.map(function(subreddit) {
+    let subreddits = ImgurStore.getSubreddits().map(function(subreddit) {
       return <option key={subreddit}>{subreddit}</option>;
     });
+    let windows = ImgurStore.getWindows().map(function(window) {
+      return <option key={window}>{window}</option>;
+    });
+    let windowSelect = null;
+    if (this.state.sort === "top") {
+      windowSelect = (<select onChange={this.setWindow} value={this.state.window}>
+        {windows}
+      </select>);
+    }
     return (
       <div>
         <input onKeyDown={this.handleTextInput} placeholder="eg: pics" />
         <select onChange={this.setSubreddit} value={this.state.subreddit}>
-          {options}
+          {subreddits}
         </select>
-        <select onChange={this.setOrderBy} value={this.state.orderBy}>
+        <select onChange={this.setSort} value={this.state.sort}>
           <option>hot</option>
           <option>top</option>
         </select>
+        {windowSelect}
         <Gallery items={this.state.items} />
       </div>
     );
