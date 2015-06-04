@@ -1,23 +1,17 @@
 import React from "react";
 
-import AppConstants from "../constants";
-import AppDispatcher from "../dispatcher";
-import GalleryStore from "../stores/gallery";
-
 export default React.createClass({
   displayName: "Gallery",
 
   propTypes: {
-    minRowHeight: React.PropTypes.number,
-    orderBy: React.PropTypes.string,
-    subreddit: React.PropTypes.string
+    items: React.PropTypes.array,
+    minRowHeight: React.PropTypes.number
   },
 
   getDefaultProps: function() {
     return {
-      minRowHeight: 200,
-      orderBy: "hot",
-      subreddit: "EarthPorn"
+      items: [],
+      minRowHeight: 200
     };
   },
 
@@ -29,47 +23,25 @@ export default React.createClass({
   },
 
   componentWillMount: function() {
-    document.addEventListener("scroll", this.handleScroll);
-    GalleryStore.addChangeListener(this.galleryChanged);
+    window.addEventListener("resize", this.handleResize);
   },
 
   componentDidMount: function() {
     this.setState({rowWidth: this.getDOMNode().offsetWidth});
-    this.fetchGallery(this.props.subreddit, this.props.orderBy);
   },
 
   componentWillReceiveProps: function(nextProps) {
-    // this.loadItems(GalleryStore.getItems(nextProps.subreddit, nextProps.orderBy));
-    this.fetchGallery(nextProps.subreddit, nextProps.orderBy);
+    this.setState({
+      loadedItems: []
+    }, this.loadItems.bind(this, nextProps.items));
   },
 
   componentWillUnmount: function() {
-    document.removeEventListener("scroll", this.handleScroll);
-    GalleryStore.removeChangeListener(this.galleryChanged);
+    window.removeEventListener("resize", this.handleResize);
   },
 
-  galleryChanged: function() {
-    this.loadItems(GalleryStore.getItems(this.props.subreddit, this.props.orderBy));
-  },
-
-  fetchGallery: function(subreddit, orderBy) {
-    this.setState({
-      loadedItems: []
-    });
-    AppDispatcher.dispatch({
-      actionType: AppConstants.GALLERY_FETCH,
-      data: {
-        subreddit: subreddit,
-        orderBy: orderBy
-      }
-    });
-  },
-
-  handleScroll: function() {
-    let scrollLimit = document.body.scrollTop + document.documentElement.clientHeight;
-    let contentLimit = this.getDOMNode().offsetHeight + this.getDOMNode().offsetTop;
-
-    console.log(scrollLimit > contentLimit);
+  handleResize: function() {
+    this.setState({rowWidth: this.getDOMNode().offsetWidth});
   },
 
   loadItems: function(items) {
@@ -145,7 +117,7 @@ export default React.createClass({
   render: function() {
 
     if (!this.state.rowWidth) {
-      return <div>Loading</div>;
+      return <div />;
     }
 
     let rowWidth = this.state.rowWidth;

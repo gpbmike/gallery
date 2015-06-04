@@ -1,3 +1,3 @@
 export default {
-  GALLERY_FETCH: "GALLERY_FETCH"
+  IMGUR_FETCH: "IMGUR_FETCH"
 };
