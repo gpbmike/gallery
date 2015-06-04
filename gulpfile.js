@@ -37,6 +37,9 @@ gulp.task("copy-assets", function() {
 gulp.task("build", ["copy-assets"], function(callback) {
   var myConfig = Object.create(webpackConfig);
 
+  myConfig.devtool = "hidden-source-map";
+  myConfig.entry = ["./app/router"];
+
   myConfig.plugins = myConfig.plugins.concat([
     new webpack.DefinePlugin({
       // This has effect on the react lib size.
