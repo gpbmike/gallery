@@ -12,7 +12,7 @@ export default React.createClass({
   getInitialState: function () {
     return {
       subreddit: "EarthPorn",
-      sort: "time",
+      sort: "latest",
       window: "week"
     };
   },
@@ -101,7 +101,7 @@ export default React.createClass({
           {subreddits}
         </select>
         <select onChange={this.setSort} value={this.state.sort}>
-          <option>hot</option>
+          <option>latest</option>
           <option>top</option>
         </select>
         {windowSelect}
