@@ -6,7 +6,7 @@ import Index from "./routes/index";
 
 let routes = (
 	<Route handler={App}>
-		<Route handler={Index} name="index" path="/" />
+		<Route handler={Index} name="index" path="/:subreddit?/?:sort?/?:window?" />
 	</Route>
 );
 

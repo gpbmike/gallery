@@ -18,16 +18,17 @@ export default React.createClass({
   getInitialState: function() {
     return {
       loadedItems: [],
-      rowWidth: null
+      componentWidth: null
     };
   },
 
   componentWillMount: function() {
     window.addEventListener("resize", this.handleResize);
+    window.addEventListener("scroll", this.handleScroll);
   },
 
   componentDidMount: function() {
-    this.setState({rowWidth: this.getDOMNode().offsetWidth});
+    this.setState({componentWidth: this.getDOMNode().offsetWidth});
   },
 
   componentWillReceiveProps: function(nextProps) {
@@ -38,10 +39,22 @@ export default React.createClass({
 
   componentWillUnmount: function() {
     window.removeEventListener("resize", this.handleResize);
+    window.removeEventListener("scroll", this.handleScroll);
   },
 
   handleResize: function() {
-    this.setState({rowWidth: this.getDOMNode().offsetWidth});
+    this.setState({componentWidth: this.getDOMNode().offsetWidth});
+  },
+
+  handleScroll: function() {
+    let scrollTolerance = this.props.minRowHeight * 2;
+    let viewportBottom = document.body.scrollTop + document.documentElement.clientHeight;
+    let componentBottom = this.getDOMNode().offsetTop + this.getDOMNode().offsetHeight;
+
+    // fetch the next page
+    if (viewportBottom + scrollTolerance > componentBottom) {
+      console.log('FETCH NEXT PAGE');
+    }
   },
 
   loadItems: function(items) {
@@ -80,7 +93,7 @@ export default React.createClass({
 
     let itemsWidth = 0;
     let minRowHeight = this.props.minRowHeight;
-    let rowWidth = this.state.rowWidth;
+    let componentWidth = this.state.componentWidth;
     let rows = [];
     let rowItems = [];
 
@@ -88,7 +101,7 @@ export default React.createClass({
 
       let itemWidth = item.aspectRatio * minRowHeight;
 
-      if (itemsWidth + itemWidth > rowWidth) {
+      if (itemsWidth + itemWidth > componentWidth) {
         rows.push({
           width: itemsWidth,
           items: rowItems,
@@ -114,31 +127,38 @@ export default React.createClass({
 
   },
 
+  zoomItem: function(item, event) {
+    event.preventDefault();
+    console.log(item);
+  },
+
   render: function() {
 
-    if (!this.state.rowWidth) {
-      return <div />;
-    }
-
-    let rowWidth = this.state.rowWidth;
+    let componentWidth = this.state.componentWidth;
     let minRowHeight = this.props.minRowHeight;
+
+    if (!componentWidth) {
+      return <div/>;
+    }
 
     let itemStyle = {
       display: "inline-block",
       verticalAlign: "bottom"
     };
 
+    let zoomItem = this.zoomItem;
+
     function buildRow(row) {
-      return row.items.map(function (item) {
+      return row.items.map(function(item) {
         let imgStyle = {
           display: "block"
         };
         if (row.full) {
-          imgStyle.width = item.aspectRatio * minRowHeight / row.width * rowWidth;
+          imgStyle.width = item.aspectRatio * minRowHeight / row.width * componentWidth;
         } else {
           imgStyle.height = minRowHeight;
         }
-        return <span key={item.url} style={itemStyle}><img src={item.url} style={imgStyle} /></span>;
+        return <a href={item.url} key={item.url} onClick={zoomItem.bind(null, item)} style={itemStyle}><img src={item.url} style={imgStyle} /></a>;
       });
     }
 

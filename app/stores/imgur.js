@@ -9,6 +9,11 @@ let subreddits = [
   "MilitaryPorn"
 ];
 
+let sorts = [
+  "latest",
+  "top"
+];
+
 let windows = [
   "day",
   "week",
@@ -25,6 +30,9 @@ let ImgurStore = Object.assign({}, BaseStore, {
   },
   getSubreddits: function() {
     return subreddits;
+  },
+  getSorts: function() {
+    return sorts;
   },
   getWindows: function() {
     return windows;
@@ -50,21 +58,7 @@ function fetchSubreddit(subreddit, options) {
 
   let itemsKey = `${subreddit}/${options.sort}/${options.window}`;
 
-  if (items[itemsKey]) {
-    ImgurStore.emitChange();
-    return;
-  }
-
-  var url = `https://api.imgur.com/3/gallery/r/${subreddit}`;
-
-  if (options.sort !== "time") {
-    url += `/${options.sort}`;
-    if (options.window) {
-      url += `/${options.window}`;
-    }
-  }
-
-  fetch(url, {
+  fetch(`https://api.imgur.com/3/gallery/r/${itemsKey}`, {
     headers: {
       "Authorization": "Client-ID e4df882d90e3ac2"
     }
@@ -76,6 +70,7 @@ function fetchSubreddit(subreddit, options) {
   }).catch(function(ex) {
     console.log("parsing failed", ex);
   });
+
 }
 
 ImgurStore.dispatchToken = AppDispatcher.register(function(action) {

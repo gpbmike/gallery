@@ -6,10 +6,22 @@ import Imgur from "../components/imgur";
 export default React.createClass({
   displayName: "IndexRoute",
 
+  contextTypes: {
+    router: React.PropTypes.func
+  },
+
+  componentWillMount: function() {
+    if (!this.context.router.getCurrentParams().subreddit) {
+      this.context.router.replaceWith("index", {
+        subreddit: "EarthPorn"
+      });
+    }
+  },
+
   render: function() {
     return (
       <DocumentTitle title="Index Title">
-        <Imgur />
+        <Imgur {...this.context.router.getCurrentParams()} />
       </DocumentTitle>
     );
   }

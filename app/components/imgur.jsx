@@ -9,11 +9,27 @@ import AppDispatcher from "../dispatcher";
 export default React.createClass({
   displayName: "Imgur",
 
+  propTypes: {
+    sort: React.PropTypes.oneOf(ImgurStore.getSorts()),
+    subreddit: React.PropTypes.string.isRequired,
+    window: React.PropTypes.oneOf(ImgurStore.getWindows())
+  },
+
+  contextTypes: {
+    router: React.PropTypes.func
+  },
+
+  getDefaultProps: function () {
+    return {
+      sort: "latest",
+      subreddit: "EarthPorn",
+      window: "week"
+    };
+  },
+
   getInitialState: function () {
     return {
-      subreddit: "EarthPorn",
-      sort: "latest",
-      window: "week"
+      items: []
     };
   },
 
@@ -22,7 +38,11 @@ export default React.createClass({
   },
 
   componentDidMount: function() {
-    this.fetchGallery();
+    this.fetchGallery(this.props);
+  },
+
+  componentWillReceiveProps: function (nextProps) {
+    this.fetchGallery(nextProps);
   },
 
   componentWillUnmount: function() {
@@ -31,53 +51,56 @@ export default React.createClass({
 
   itemsChanged: function() {
     this.setState({
-      items: ImgurStore.getItems(this.state.subreddit, {
-        sort: this.state.sort,
-        window: this.state.window
+      items: ImgurStore.getItems(this.props.subreddit, {
+        sort: this.props.sort,
+        window: this.props.window
       })
     });
   },
 
-  fetchGallery: function() {
+  fetchGallery: function(options) {
+    this.setState({
+      items: []
+    });
     AppDispatcher.dispatch({
       actionType: AppConstants.IMGUR_FETCH,
       data: {
-        subreddit: this.state.subreddit,
+        subreddit: options.subreddit,
         options: {
-          sort: this.state.sort,
-          window: this.state.window
+          sort: options.sort,
+          window: options.window
         }
       }
     });
   },
 
   setSubreddit: function(event) {
-    this.setState({
-      items: [],
+    this.refs.input.getDOMNode().value = "";
+    this.context.router.transitionTo("index", {
       subreddit: event.target.value
-    }, this.fetchGallery);
+    });
   },
 
   setSort: function(event) {
-    this.setState({
-      items: [],
+    this.context.router.transitionTo("index", {
+      subreddit: this.props.subreddit,
       sort: event.target.value
-    }, this.fetchGallery);
+    });
   },
 
   setWindow: function(event) {
-    this.setState({
-      items: [],
+    this.context.router.transitionTo("index", {
+      subreddit: this.props.subreddit,
+      sort: this.props.sort,
       window: event.target.value
-    }, this.fetchGallery);
+    });
   },
 
   handleTextInput: function(event) {
     if (event.keyCode === 13) {
-      this.setState({
-        items: [],
+      this.context.router.transitionTo("index", {
         subreddit: event.target.value
-      }, this.fetchGallery);
+      });
     }
   },
 
@@ -89,18 +112,18 @@ export default React.createClass({
       return <option key={window}>{window}</option>;
     });
     let windowSelect = null;
-    if (this.state.sort === "top") {
-      windowSelect = (<select onChange={this.setWindow} value={this.state.window}>
+    if (this.props.sort === "top") {
+      windowSelect = (<select defaultValue={this.props.window} onChange={this.setWindow}>
         {windows}
       </select>);
     }
     return (
       <div>
-        <input onKeyDown={this.handleTextInput} placeholder="eg: pics" />
-        <select onChange={this.setSubreddit} value={this.state.subreddit}>
+        <input onKeyDown={this.handleTextInput} placeholder="eg: pics" ref="input" />
+        <select defaultValue={this.props.subreddit} onChange={this.setSubreddit}>
           {subreddits}
         </select>
-        <select onChange={this.setSort} value={this.state.sort}>
+        <select defaultValue={this.props.sort} onChange={this.setSort}>
           <option>latest</option>
           <option>top</option>
         </select>
@@ -108,5 +131,6 @@ export default React.createClass({
         <Gallery items={this.state.items} />
       </div>
     );
+
   }
 });
