@@ -35,7 +35,6 @@ export default React.createClass({
   },
 
   componentWillReceiveProps: function(nextProps) {
-    console.log(nextProps.items);
     this.loadItems(nextProps.items);
   },
 
@@ -71,8 +70,6 @@ export default React.createClass({
 
     items.forEach(function(item, index) {
 
-      console.log(item);
-
       var img = new Image();
       img.onload = function() {
 
@@ -90,7 +87,9 @@ export default React.createClass({
         this.setState({loadedItems: loadedItems});
 
       }.bind(this);
+
       img.src = item.thumbnail;
+
     }.bind(this));
   },
 
