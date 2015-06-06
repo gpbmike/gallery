@@ -58,14 +58,24 @@ function fetchSubreddit(subreddit, options) {
 
   let itemsKey = `${subreddit}/${options.sort}/${options.window}`;
 
-  fetch(`https://api.imgur.com/3/gallery/r/${itemsKey}`, {
+  let url = `https://api.imgur.com/3/gallery/r/${itemsKey}`;
+
+  if (options.page > 1) {
+    url += `/${options.page}`;
+  }
+
+  fetch(url, {
     headers: {
       "Authorization": "Client-ID e4df882d90e3ac2"
     }
   }).then(function(response) {
     return response.json();
   }).then(function(json) {
-    items[itemsKey] = parseImgur(json);
+    if (options.page > 1) {
+      items[itemsKey] = items[itemsKey].concat(parseImgur(json));
+    } else {
+      items[itemsKey] = parseImgur(json);
+    }
     ImgurStore.emitChange();
   }).catch(function(ex) {
     console.log("parsing failed", ex);

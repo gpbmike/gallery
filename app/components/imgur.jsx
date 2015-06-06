@@ -58,17 +58,17 @@ export default React.createClass({
     });
   },
 
+  page: 1,
+
   fetchGallery: function(options) {
-    this.setState({
-      items: []
-    });
     AppDispatcher.dispatch({
       actionType: AppConstants.IMGUR_FETCH,
       data: {
         subreddit: options.subreddit,
         options: {
           sort: options.sort,
-          window: options.window
+          window: options.window,
+          page: this.page
         }
       }
     });
@@ -104,6 +104,11 @@ export default React.createClass({
     }
   },
 
+  handleEnd: function() {
+    this.page++;
+    this.fetchGallery(this.props);
+  },
+
   render: function() {
     let subreddits = ImgurStore.getSubreddits().map(function(subreddit) {
       return <option key={subreddit}>{subreddit}</option>;
@@ -128,7 +133,7 @@ export default React.createClass({
           <option>top</option>
         </select>
         {windowSelect}
-        <Gallery items={this.state.items} />
+        <Gallery items={this.state.items} onEnd={this.handleEnd} />
       </div>
     );
 

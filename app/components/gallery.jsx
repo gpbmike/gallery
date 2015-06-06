@@ -5,13 +5,15 @@ export default React.createClass({
 
   propTypes: {
     items: React.PropTypes.array,
-    minRowHeight: React.PropTypes.number
+    minRowHeight: React.PropTypes.number,
+    onEnd: React.PropTypes.func
   },
 
   getDefaultProps: function() {
     return {
       items: [],
-      minRowHeight: 200
+      minRowHeight: 200,
+      onEnd: function () {}
     };
   },
 
@@ -32,9 +34,11 @@ export default React.createClass({
   },
 
   componentWillReceiveProps: function(nextProps) {
-    this.setState({
-      loadedItems: []
-    }, this.loadItems.bind(this, nextProps.items));
+    this.loadItems(nextProps.items);
+  },
+
+  componentDidUpdate: function() {
+    this.hasEnded = false;
   },
 
   componentWillUnmount: function() {
@@ -46,14 +50,17 @@ export default React.createClass({
     this.setState({componentWidth: this.getDOMNode().offsetWidth});
   },
 
+  hasEnded: false,
+
   handleScroll: function() {
     let scrollTolerance = this.props.minRowHeight * 2;
     let viewportBottom = document.body.scrollTop + document.documentElement.clientHeight;
     let componentBottom = this.getDOMNode().offsetTop + this.getDOMNode().offsetHeight;
 
     // fetch the next page
-    if (viewportBottom + scrollTolerance > componentBottom) {
-      console.log('FETCH NEXT PAGE');
+    if (viewportBottom + scrollTolerance > componentBottom && !this.hasEnded) {
+      this.hasEnded = true;
+      this.props.onEnd();
     }
   },
 
