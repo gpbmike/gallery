@@ -164,7 +164,8 @@ export default React.createClass({
 
     let itemStyle = {
       display: "inline-block",
-      verticalAlign: "bottom"
+      verticalAlign: "bottom",
+      cursor: "pointer"
     };
 
     let focusItem = this.focusItem;
@@ -197,6 +198,7 @@ export default React.createClass({
     });
 
     let focusedContainerStyle = {
+      cursor: "pointer",
       position: "fixed",
       top: 0,
       left: 0,
