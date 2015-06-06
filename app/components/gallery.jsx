@@ -20,7 +20,8 @@ export default React.createClass({
   getInitialState: function() {
     return {
       loadedItems: [],
-      componentWidth: null
+      componentWidth: null,
+      focusedItem: null
     };
   },
 
@@ -34,6 +35,7 @@ export default React.createClass({
   },
 
   componentWillReceiveProps: function(nextProps) {
+    console.log(nextProps.items);
     this.loadItems(nextProps.items);
   },
 
@@ -67,23 +69,28 @@ export default React.createClass({
   loadItems: function(items) {
     let loadedItems = this.state.loadedItems;
 
-    items.forEach(function(url, index) {
+    items.forEach(function(item, index) {
+
+      console.log(item);
+
       var img = new Image();
       img.onload = function() {
 
-        let item = {
-          url: url,
+        let galleryItem = {
+          thumbnail: item.thumbnail,
+          original: item.original,
           width: img.width,
           height: img.height,
-          aspectRatio: img.width / img.height
+          aspectRatio: img.width / img.height,
+          data: item.data
         };
 
-        loadedItems[index] = item;
+        loadedItems[index] = galleryItem;
 
         this.setState({loadedItems: loadedItems});
 
       }.bind(this);
-      img.src = url;
+      img.src = item.thumbnail;
     }.bind(this));
   },
 
@@ -134,9 +141,17 @@ export default React.createClass({
 
   },
 
-  zoomItem: function(item, event) {
+  focusItem: function(item, event) {
     event.preventDefault();
-    console.log(item);
+    this.setState({
+      focusedItem: item
+    });
+  },
+
+  handleFocusedClick: function() {
+    this.setState({
+      focusedItem: null
+    });
   },
 
   render: function() {
@@ -153,7 +168,7 @@ export default React.createClass({
       verticalAlign: "bottom"
     };
 
-    let zoomItem = this.zoomItem;
+    let focusItem = this.focusItem;
 
     function buildRow(row) {
       return row.items.map(function(item) {
@@ -165,7 +180,11 @@ export default React.createClass({
         } else {
           imgStyle.height = minRowHeight;
         }
-        return <a href={item.url} key={item.url} onClick={zoomItem.bind(null, item)} style={itemStyle}><img src={item.url} style={imgStyle} /></a>;
+        return (
+          <a href={item.url} key={item.thumbnail} onClick={focusItem.bind(null, item)} style={itemStyle}>
+            <img src={item.thumbnail} style={imgStyle} />
+          </a>
+        );
       });
     }
 
@@ -173,13 +192,48 @@ export default React.createClass({
 
     var rows = this.getRows(this.state.loadedItems).map(function(row) {
       let key = row.items.reduce(function (memo, item) {
-        return memo + item.url;
+        return memo + item.thumbnail;
       }, "");
       return <div key={key} style={rowStyle}>{buildRow(row)}</div>;
     });
 
+    let focusedContainerStyle = {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "rgba(0, 0, 0, 0.9)"
+    };
+
+    let focusedImgStyle = {
+      maxWidth: "100%",
+      maxHeight: "100%"
+    };
+
+    let focusedItem = this.state.focusedItem;
+    let handleFocusedClick = this.handleFocusedClick;
+
+    function getFocusedImg() {
+      if (focusedItem) {
+        return (
+          <div onClick={handleFocusedClick} style={focusedContainerStyle}>
+            <img src={focusedItem.original} style={focusedImgStyle} />
+          </div>
+        );
+      } else {
+        return null;
+      }
+    }
+
     return (
-      <div>{rows}</div>
+      <div>
+        {rows}
+        {getFocusedImg()}
+      </div>
     );
   }
 });

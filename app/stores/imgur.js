@@ -45,7 +45,11 @@ function parseImgur(results) {
     if (/^image\/(jpeg|png)/.test(child.type)) {
       let linkParts = child.link.split(".");
       linkParts[linkParts.length - 2] += "l";
-      return linkParts.join(".");
+      return {
+        original: child.link,
+        thumbnail: linkParts.join("."),
+        data: child
+      };
     } else {
       console.log(`Missing ${child.type} support.`);
     }
