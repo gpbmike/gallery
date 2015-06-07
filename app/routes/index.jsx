@@ -20,7 +20,7 @@ export default React.createClass({
 
   render: function() {
     return (
-      <DocumentTitle title="Index Title">
+      <DocumentTitle title="Gallery Thing">
         <Imgur {...this.context.router.getCurrentParams()} />
       </DocumentTitle>
     );
