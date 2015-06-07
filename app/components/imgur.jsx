@@ -42,7 +42,9 @@ export default React.createClass({
   },
 
   componentWillReceiveProps: function (nextProps) {
-    this.fetchGallery(nextProps);
+    if (JSON.stringify(nextProps) !== JSON.stringify(this.props)) {
+      this.fetchGallery(nextProps);
+    }
   },
 
   componentWillUnmount: function() {
@@ -76,6 +78,7 @@ export default React.createClass({
 
   setSubreddit: function(event) {
     this.refs.input.getDOMNode().value = "";
+    this.page = 1;
     this.context.router.transitionTo("index", {
       subreddit: event.target.value
     });
@@ -98,8 +101,11 @@ export default React.createClass({
 
   handleTextInput: function(event) {
     if (event.keyCode === 13) {
+      this.page = 1;
       this.context.router.transitionTo("index", {
-        subreddit: event.target.value
+        subreddit: event.target.value,
+        sort: this.props.sort,
+        window: this.props.window
       });
     }
   },
