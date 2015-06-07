@@ -54,7 +54,7 @@ export default React.createClass({
   hasEnded: false,
 
   handleScroll: function() {
-    let scrollTolerance = this.props.minRowHeight * 2;
+    let scrollTolerance = this.props.minRowHeight * 4;
     let viewportBottom = document.body.scrollTop + document.documentElement.clientHeight;
     let componentBottom = this.getDOMNode().offsetTop + this.getDOMNode().offsetHeight;
 
