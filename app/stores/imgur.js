@@ -5,8 +5,7 @@ import BaseStore from "./base";
 let subreddits = [
   "EarthPorn",
   "BotanicalPorn",
-  "WaterPorn",
-  "MilitaryPorn"
+  "WaterPorn"
 ];
 
 let sorts = [

@@ -130,7 +130,7 @@ export default React.createClass({
     }
     return (
       <div>
-        <input onKeyDown={this.handleTextInput} placeholder="eg: pics" ref="input" />
+        <input onKeyDown={this.handleTextInput} placeholder="subreddit eg: pics" ref="input" />
         <select defaultValue={this.props.subreddit} onChange={this.setSubreddit}>
           {subreddits}
         </select>

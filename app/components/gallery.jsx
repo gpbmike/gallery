@@ -1,5 +1,24 @@
 import React from "react";
 
+let debounce = function(func, wait, immediate) {
+  let timeout;
+  return function() {
+    var context = this, args = arguments;
+    var later = function() {
+      timeout = null;
+      if (!immediate) {
+        func.apply(context, args);
+      }
+    };
+    var callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) {
+      func.apply(context, args);
+    }
+  };
+}
+
 export default React.createClass({
   displayName: "Gallery",
 
@@ -26,7 +45,7 @@ export default React.createClass({
   },
 
   componentWillMount: function() {
-    window.addEventListener("resize", this.handleResize);
+    window.addEventListener("resize", this.debouncedResize);
     window.addEventListener("scroll", this.handleScroll);
   },
 
@@ -43,13 +62,13 @@ export default React.createClass({
   },
 
   componentWillUnmount: function() {
-    window.removeEventListener("resize", this.handleResize);
+    window.removeEventListener("resize", this.debouncedResize);
     window.removeEventListener("scroll", this.handleScroll);
   },
 
-  handleResize: function() {
+  debouncedResize: debounce(function () {
     this.setState({componentWidth: this.getDOMNode().offsetWidth});
-  },
+  }, 100),
 
   hasEnded: false,
 
@@ -188,7 +207,9 @@ export default React.createClass({
       });
     }
 
-    let rowStyle = {};
+    let rowStyle = {
+      width: this.state.componentWidth
+    };
 
     var rows = this.getRows(this.state.loadedItems).map(function(row) {
       let key = row.items.reduce(function (memo, item) {
