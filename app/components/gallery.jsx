@@ -17,7 +17,7 @@ let debounce = function(func, wait, immediate) {
       func.apply(context, args);
     }
   };
-}
+};
 
 export default React.createClass({
   displayName: "Gallery",
