@@ -43,6 +43,7 @@ export default React.createClass({
 
   componentWillReceiveProps: function (nextProps) {
     if (JSON.stringify(nextProps) !== JSON.stringify(this.props)) {
+      this.setState({items: []});
       this.fetchGallery(nextProps);
     }
   },
@@ -76,23 +77,32 @@ export default React.createClass({
     });
   },
 
+  transition: function(params) {
+    this.page = 1;
+    if (params.sort === "latest") {
+      delete params.window;
+    }
+    this.context.router.transitionTo("index", params);
+  },
+
   setSubreddit: function(event) {
     this.refs.input.getDOMNode().value = "";
-    this.page = 1;
-    this.context.router.transitionTo("index", {
-      subreddit: event.target.value
+    this.transition({
+      subreddit: event.target.value,
+      sort: this.props.sort,
+      window: this.props.window
     });
   },
 
   setSort: function(event) {
-    this.context.router.transitionTo("index", {
+    this.transition({
       subreddit: this.props.subreddit,
       sort: event.target.value
     });
   },
 
   setWindow: function(event) {
-    this.context.router.transitionTo("index", {
+    this.transition({
       subreddit: this.props.subreddit,
       sort: this.props.sort,
       window: event.target.value
@@ -101,8 +111,7 @@ export default React.createClass({
 
   handleTextInput: function(event) {
     if (event.keyCode === 13) {
-      this.page = 1;
-      this.context.router.transitionTo("index", {
+      this.transition({
         subreddit: event.target.value,
         sort: this.props.sort,
         window: this.props.window
@@ -128,17 +137,30 @@ export default React.createClass({
         {windows}
       </select>);
     }
+
+    let navStyle = {
+      position: "fixed",
+      top: 0,
+      height: 25
+    };
+
+    let wrapStyle = {
+      marginTop: 25
+    };
+
     return (
-      <div>
-        <input onKeyDown={this.handleTextInput} placeholder="subreddit eg: pics" ref="input" />
-        <select defaultValue={this.props.subreddit} onChange={this.setSubreddit}>
-          {subreddits}
-        </select>
-        <select defaultValue={this.props.sort} onChange={this.setSort}>
-          <option>latest</option>
-          <option>top</option>
-        </select>
-        {windowSelect}
+      <div style={wrapStyle}>
+        <nav style={navStyle}>
+          <input onKeyDown={this.handleTextInput} placeholder="subreddit eg: pics" ref="input" />
+          <select defaultValue={this.props.subreddit} onChange={this.setSubreddit}>
+            {subreddits}
+          </select>
+          <select defaultValue={this.props.sort} onChange={this.setSort}>
+            <option>latest</option>
+            <option>top</option>
+          </select>
+          {windowSelect}
+        </nav>
         <Gallery items={this.state.items} onEnd={this.handleEnd} />
       </div>
     );

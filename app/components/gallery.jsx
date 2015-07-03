@@ -54,11 +54,11 @@ export default React.createClass({
   },
 
   componentWillReceiveProps: function(nextProps) {
-    this.loadItems(nextProps.items);
-  },
-
-  componentDidUpdate: function() {
-    this.hasEnded = false;
+    if (nextProps.items.length) {
+      this.loadItems(nextProps.items);
+    } else {
+      this.setState({loadedItems: []});
+    }
   },
 
   componentWillUnmount: function() {
@@ -70,16 +70,27 @@ export default React.createClass({
     this.setState({componentWidth: this.getDOMNode().offsetWidth});
   }, 100),
 
-  hasEnded: false,
+  itemsScrolled: 0,
 
   handleScroll: function() {
+
+    // Not all of the images have loaded.
+    if (this.state.loadedItems.length < this.props.items.length) {
+      return;
+    }
+
+    // We have already attempted next page fetch
+    if (this.props.items.length === this.itemsScrolled) {
+      return;
+    }
+
     let scrollTolerance = this.props.minRowHeight * 4;
     let viewportBottom = document.body.scrollTop + document.documentElement.clientHeight;
     let componentBottom = this.getDOMNode().offsetTop + this.getDOMNode().offsetHeight;
 
     // fetch the next page
-    if (viewportBottom + scrollTolerance > componentBottom && !this.hasEnded) {
-      this.hasEnded = true;
+    if (viewportBottom + scrollTolerance > componentBottom) {
+      this.itemsScrolled = this.props.items.length;
       this.props.onEnd();
     }
   },
