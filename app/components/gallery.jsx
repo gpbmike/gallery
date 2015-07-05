@@ -106,19 +106,6 @@ export default React.createClass({
         data: item.data
       };
 
-      if (item.data.width && item.data.height) {
-
-        Object.assign(galleryItem, {
-          width: item.data.width,
-          height: item.data.height,
-          aspectRatio: item.data.width / item.data.height
-        });
-
-        loadedItems[index] = galleryItem;
-
-        return;
-      }
-
       var img = new Image();
       img.onload = function() {
 
@@ -137,8 +124,6 @@ export default React.createClass({
       img.src = item.thumbnail;
 
     }.bind(this));
-
-    this.setState({loadedItems: loadedItems});
 
   },
 
