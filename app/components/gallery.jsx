@@ -100,17 +100,33 @@ export default React.createClass({
 
     items.forEach(function(item, index) {
 
+      let galleryItem = {
+        thumbnail: item.thumbnail,
+        original: item.original,
+        data: item.data
+      };
+
+      if (item.data.width && item.data.height) {
+
+        Object.assign(galleryItem, {
+          width: item.data.width,
+          height: item.data.height,
+          aspectRatio: item.data.width / item.data.height
+        });
+
+        loadedItems[index] = galleryItem;
+
+        return;
+      }
+
       var img = new Image();
       img.onload = function() {
 
-        let galleryItem = {
-          thumbnail: item.thumbnail,
-          original: item.original,
+        Object.assign(galleryItem, {
           width: img.width,
           height: img.height,
-          aspectRatio: img.width / img.height,
-          data: item.data
-        };
+          aspectRatio: img.width / img.height
+        });
 
         loadedItems[index] = galleryItem;
 
@@ -121,6 +137,9 @@ export default React.createClass({
       img.src = item.thumbnail;
 
     }.bind(this));
+
+    this.setState({loadedItems: loadedItems});
+
   },
 
   getRows: function(items) {
