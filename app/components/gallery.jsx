@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOM from "react-dom";
 
 let debounce = function(func, wait, immediate) {
   let timeout;
@@ -50,7 +51,7 @@ export default React.createClass({
   },
 
   componentDidMount: function() {
-    this.setState({componentWidth: this.getDOMNode().offsetWidth});
+    this.setState({componentWidth: ReactDOM.findDOMNode(this).offsetWidth});
   },
 
   componentWillReceiveProps: function(nextProps) {
@@ -67,7 +68,7 @@ export default React.createClass({
   },
 
   debouncedResize: debounce(function () {
-    this.setState({componentWidth: this.getDOMNode().offsetWidth});
+    this.setState({componentWidth: ReactDOM.findDOMNode(this).offsetWidth});
   }, 100),
 
   itemsScrolled: 0,
@@ -86,7 +87,7 @@ export default React.createClass({
 
     let scrollTolerance = this.props.minRowHeight * 4;
     let viewportBottom = document.body.scrollTop + document.documentElement.clientHeight;
-    let componentBottom = this.getDOMNode().offsetTop + this.getDOMNode().offsetHeight;
+    let componentBottom = ReactDOM.findDOMNode(this).offsetTop + ReactDOM.findDOMNode(this).offsetHeight;
 
     // fetch the next page
     if (viewportBottom + scrollTolerance > componentBottom) {

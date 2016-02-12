@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOM from "react-dom";
 import Router, { Route } from "react-router";
 
 import App from "./routes/app";
@@ -11,5 +12,5 @@ let routes = (
 );
 
 Router.run(routes, Router.HashLocation, function (Handler) {
-  React.render(<Handler />, document.body);
+  ReactDOM.render(<Handler />, document.getElementById("gallery"));
 });
