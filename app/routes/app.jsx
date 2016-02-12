@@ -1,14 +1,13 @@
 import React from "react";
-import { RouteHandler } from "react-router";
 
 export default React.createClass({
 	displayName: "AppRoute",
 
-  contextTypes: {
-		router: React.PropTypes.func
+	propTypes: {
+		children: React.PropTypes.any
 	},
 
 	render: function() {
-		return <RouteHandler />;
+		return <div>{this.props.children}</div>;
 	}
 });

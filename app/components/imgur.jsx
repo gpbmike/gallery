@@ -1,5 +1,7 @@
 import React from "react";
 
+import appHistory from "../history";
+
 import ImgurStore from "../stores/imgur";
 import Gallery from "../components/gallery";
 
@@ -13,10 +15,6 @@ export default React.createClass({
     sort: React.PropTypes.oneOf(ImgurStore.getSorts()),
     subreddit: React.PropTypes.string.isRequired,
     window: React.PropTypes.oneOf(ImgurStore.getWindows())
-  },
-
-  contextTypes: {
-    router: React.PropTypes.func
   },
 
   getDefaultProps: function () {
@@ -82,11 +80,20 @@ export default React.createClass({
     if (params.sort === "latest") {
       delete params.window;
     }
-    this.context.router.transitionTo("index", params);
+    let path = "/";
+    if (params.subreddit) {
+      path = path.concat(`${params.subreddit}`);
+      if (params.sort) {
+        path = path.concat(`/${params.sort}`);
+        if (params.window) {
+          path = path.concat(`/${params.window}`);
+        }
+      }
+    }
+    appHistory.push(path);
   },
 
   setSubreddit: function(event) {
-    this.refs.input.getDOMNode().value = "";
     this.transition({
       subreddit: event.target.value,
       sort: this.props.sort,
@@ -125,19 +132,6 @@ export default React.createClass({
   },
 
   render: function() {
-    let subreddits = ImgurStore.getSubreddits().map(function(subreddit) {
-      return <option key={subreddit}>{subreddit}</option>;
-    });
-    let windows = ImgurStore.getWindows().map(function(window) {
-      return <option key={window}>{window}</option>;
-    });
-    let windowSelect = null;
-    if (this.props.sort === "top") {
-      windowSelect = (<select defaultValue={this.props.window} onChange={this.setWindow}>
-        {windows}
-      </select>);
-    }
-
     let navStyle = {
       position: "fixed",
       top: 0,
@@ -153,13 +147,21 @@ export default React.createClass({
         <nav style={navStyle}>
           <input onKeyDown={this.handleTextInput} placeholder="subreddit eg: pics" ref="input" />
           <select defaultValue={this.props.subreddit} onChange={this.setSubreddit}>
-            {subreddits}
+            {ImgurStore.getSubreddits().map(function(subreddit) {
+              return <option key={subreddit} value={subreddit}>{subreddit}</option>;
+            })}
           </select>
           <select defaultValue={this.props.sort} onChange={this.setSort}>
-            <option>latest</option>
-            <option>top</option>
+            <option value="latest">latest</option>
+            <option value="top">top</option>
           </select>
-          {windowSelect}
+          {this.props.sort === "top" && (
+            <select defaultValue={this.props.window} onChange={this.setWindow}>
+              {ImgurStore.getWindows().map(function(window) {
+                return <option key={window} value={window}>{window}</option>;
+              })}
+            </select>
+          )}
         </nav>
         <Gallery items={this.state.items} onEnd={this.handleEnd} />
       </div>
