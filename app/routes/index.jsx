@@ -1,20 +1,19 @@
-import React from "react";
-import DocumentTitle from "react-document-title";
+import React from 'react';
+import DocumentTitle from 'react-document-title';
 
-import Imgur from "../components/imgur";
+import Imgur from '../components/imgur';
 
-export default React.createClass({
-  displayName: "IndexRoute",
-
-  propTypes: {
-    params: React.PropTypes.object
+const IndexRoute = ({
+  params: {
+    subreddit = 'EarthPorn',
+    sort = 'latest',
+    window = 'week',
+    page = 1,
   },
+}) => (
+  <DocumentTitle title="Gallery Thing">
+    <Imgur subreddit={subreddit} sort={sort} window={window} page={page}/>
+  </DocumentTitle>
+);
 
-  render: function() {
-    return (
-      <DocumentTitle title="Gallery Thing">
-        <Imgur {...this.props.params} />
-      </DocumentTitle>
-    );
-  }
-});
+export default IndexRoute;

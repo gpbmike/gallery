@@ -1,13 +1,5 @@
-import React from "react";
+import React from 'react';
 
-export default React.createClass({
-	displayName: "AppRoute",
+const AppRoute = (props) => <div {...props} />;
 
-	propTypes: {
-		children: React.PropTypes.any
-	},
-
-	render: function() {
-		return <div>{this.props.children}</div>;
-	}
-});
+export default AppRoute;

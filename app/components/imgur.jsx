@@ -1,86 +1,88 @@
-import React from "react";
+import React from 'react';
+import appHistory from '../history';
+import { fetchMany } from '../actions/ImgurActions';
+import { getQueryItems } from '../reducers/ImgurReducer';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import FlexGallery from '../components/FlexGallery';
+import Focused from '../components/Focused';
 
-import appHistory from "../history";
+const subreddits = [
+  'EarthPorn',
+  'BotanicalPorn',
+  'WaterPorn',
+];
 
-import ImgurStore from "../stores/imgur";
-import Gallery from "../components/gallery";
+const sorts = [
+  'latest',
+  'top',
+];
 
-import AppConstants from "../constants";
-import AppDispatcher from "../dispatcher";
+const windows = [
+  'day',
+  'week',
+  'month',
+  'year',
+  'all',
+];
 
-export default React.createClass({
-  displayName: "Imgur",
+class Imgur extends React.Component {
 
-  propTypes: {
-    sort: React.PropTypes.oneOf(ImgurStore.getSorts()),
+  static propTypes = {
+    sort: React.PropTypes.oneOf(sorts).isRequired,
     subreddit: React.PropTypes.string.isRequired,
-    window: React.PropTypes.oneOf(ImgurStore.getWindows())
-  },
+    window: React.PropTypes.oneOf(windows).isRequired,
+    page: React.PropTypes.number.isRequired,
+    fetchMany: React.PropTypes.func.isRequired,
+    items: React.PropTypes.array.isRequired,
+    focused: React.PropTypes.object,
+    prevFocus: React.PropTypes.string,
+    nextFocus: React.PropTypes.string,
+  };
 
-  getDefaultProps: function () {
-    return {
-      sort: "latest",
-      subreddit: "EarthPorn",
-      window: "week"
-    };
-  },
+  defaultProps = {
+    sort: 'latest',
+    subreddit: 'EarthPorn',
+    window: 'week',
+    page: 1,
+  };
 
-  getInitialState: function () {
-    return {
-      items: []
-    };
-  },
-
-  componentWillMount: function() {
-    ImgurStore.addChangeListener(this.itemsChanged);
-  },
-
-  componentDidMount: function() {
+  componentDidMount() {
     this.fetchGallery(this.props);
-  },
+  }
 
-  componentWillReceiveProps: function (nextProps) {
+  componentWillReceiveProps(nextProps) {
     if (JSON.stringify(nextProps) !== JSON.stringify(this.props)) {
-      this.setState({items: []});
       this.fetchGallery(nextProps);
     }
-  },
+  }
 
-  componentWillUnmount: function() {
-    ImgurStore.removeChangeListener(this.itemsChanged);
-  },
-
-  itemsChanged: function() {
-    this.setState({
-      items: ImgurStore.getItems(this.props.subreddit, {
-        sort: this.props.sort,
-        window: this.props.window
-      })
+  setSubreddit = (event) => {
+    this.transition({
+      subreddit: event.target.value,
+      sort: this.props.sort,
+      window: this.props.window,
     });
-  },
+  };
 
-  page: 1,
-
-  fetchGallery: function(options) {
-    AppDispatcher.dispatch({
-      actionType: AppConstants.IMGUR_FETCH,
-      data: {
-        subreddit: options.subreddit,
-        options: {
-          sort: options.sort,
-          window: options.window,
-          page: this.page
-        }
-      }
+  setSort = (event) => {
+    this.transition({
+      subreddit: this.props.subreddit,
+      sort: event.target.value,
     });
-  },
+  };
 
-  transition: function(params) {
+  setWindow = (event) => {
+    this.transition({
+      subreddit: this.props.subreddit,
+      sort: this.props.sort,
+      window: event.target.value,
+    });
+  };
+
+  transition(params) {
     this.page = 1;
-    if (params.sort === "latest") {
-      delete params.window;
-    }
-    let path = "/";
+    let path = '/';
     if (params.subreddit) {
       path = path.concat(`${params.subreddit}`);
       if (params.sort) {
@@ -91,55 +93,35 @@ export default React.createClass({
       }
     }
     appHistory.push(path);
-  },
+  }
 
-  setSubreddit: function(event) {
-    this.transition({
-      subreddit: event.target.value,
-      sort: this.props.sort,
-      window: this.props.window
-    });
-  },
+  fetchGallery(props) {
+    this.props.fetchMany(props);
+  }
 
-  setSort: function(event) {
-    this.transition({
-      subreddit: this.props.subreddit,
-      sort: event.target.value
-    });
-  },
-
-  setWindow: function(event) {
-    this.transition({
-      subreddit: this.props.subreddit,
-      sort: this.props.sort,
-      window: event.target.value
-    });
-  },
-
-  handleTextInput: function(event) {
+  handleTextInput = (event) => {
     if (event.keyCode === 13) {
       this.transition({
         subreddit: event.target.value,
         sort: this.props.sort,
-        window: this.props.window
+        window: this.props.window,
       });
     }
-  },
+  };
 
-  handleEnd: function() {
-    this.page++;
+  handleEnd() {
     this.fetchGallery(this.props);
-  },
+  }
 
-  render: function() {
-    let navStyle = {
-      position: "fixed",
+  render() {
+    const navStyle = {
+      position: 'fixed',
       top: 0,
-      height: 25
+      height: 25,
     };
 
-    let wrapStyle = {
-      marginTop: 25
+    const wrapStyle = {
+      marginTop: 25,
     };
 
     return (
@@ -147,25 +129,59 @@ export default React.createClass({
         <nav style={navStyle}>
           <input onKeyDown={this.handleTextInput} placeholder="subreddit eg: pics" ref="input" />
           <select defaultValue={this.props.subreddit} onChange={this.setSubreddit}>
-            {ImgurStore.getSubreddits().map(function(subreddit) {
-              return <option key={subreddit} value={subreddit}>{subreddit}</option>;
-            })}
+            {subreddits.map((subreddit) => (
+              <option key={subreddit} value={subreddit}>{subreddit}</option>
+            ))}
           </select>
           <select defaultValue={this.props.sort} onChange={this.setSort}>
-            <option value="latest">latest</option>
-            <option value="top">top</option>
+            {sorts.map((sort) => (
+              <option key={sort} value={sort} value={sort}>{sort}</option>
+            ))}
           </select>
-          {this.props.sort === "top" && (
+          {this.props.sort === 'top' && (
             <select defaultValue={this.props.window} onChange={this.setWindow}>
-              {ImgurStore.getWindows().map(function(window) {
-                return <option key={window} value={window}>{window}</option>;
-              })}
+              {windows.map((window) => (
+                <option key={window} value={window}>{window}</option>
+              ))}
             </select>
           )}
         </nav>
-        <Gallery items={this.state.items} onEnd={this.handleEnd} />
+        <FlexGallery items={this.props.items} onEnd={this.handleEnd} />
+        {this.props.focused && (
+          <Focused
+            focused={this.props.focused}
+            prev={this.props.prevFocus}
+            next={this.props.nextFocus}
+          />
+        )}
       </div>
     );
-
   }
-});
+}
+
+const mapStateToProps = (state, ownProps) => {
+  const items = getQueryItems(state.images, ownProps);
+
+  const itemKeys = items.map(({ id }) => id);
+  const focused = state.images.items[state.images.focus];
+  const focusedIndex = focused && itemKeys.indexOf(state.images.focus);
+  const prevFocus = !!~focusedIndex && focusedIndex > 0
+    ? itemKeys[focusedIndex - 1]
+    : null;
+  const nextFocus = !!~focusedIndex && focusedIndex + 1 < itemKeys.length
+    ? itemKeys[focusedIndex + 1]
+    : null;
+
+  return {
+    items,
+    focused,
+    prevFocus,
+    nextFocus,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => bindActionCreators({
+  fetchMany,
+}, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(Imgur);
